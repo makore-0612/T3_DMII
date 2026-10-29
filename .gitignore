@@ -220,11 +220,14 @@ __marimo__/
 .streamlit/secrets.toml
 
 # --- Práctica T3 ---
-# Datos (se descargan de SNAP; ver cit-HepPh/README.md)
+# Datos (se descargan de la fuente original; ver el README de cada carpeta)
+# cit-HepPh: SNAP, en cit-HepPh/data/
 **/data/
 *.gz
 *.parquet
 *.npz
+# spotify: Kaggle, en una carpeta Datos/
+**/Datos/
 
 # Documentos generados
 *.pdf
