@@ -22,9 +22,9 @@ Red de citas entre artículos de la categoría *High Energy Physics – Phenomen
    |---|---|---|---|
    | `01_eda_calidad_preprocesamiento.ipynb` | `data/cit-HepPh.txt.gz`, `data/cit-HepPh-dates.txt.gz` | `aristas_limpias.parquet`, `nodos_limpios.parquet`, `fechas_cross_listed.parquet` | 1 min |
    | `02_pagerank_hits.ipynb` | los Parquet del notebook 1 | `adyacencia.npz` (matriz CSR con el arreglo de IDs) | 1–2 min |
-   | `03_topic_sensitive.ipynb` | `adyacencia.npz` y los Parquet | — | 1–2 min |
+   | `03_topic_sensitive.ipynb` | `adyacencia.npz` y los Parquet | — | 3 min (t-SNE sobre una muestra) |
 
-   Los resultados son reproducibles: las partes aleatorias (muestreo de BFS, Louvain, Isolation Forest) usan
+   Los resultados son reproducibles: las partes aleatorias (muestreo de BFS, Louvain, Isolation Forest, NMF, SVD, t-SNE) usan
    `random_state` / `seed` = 42.
 
 ## Decisiones principales
@@ -39,3 +39,5 @@ Red de citas entre artículos de la categoría *High Energy Physics – Phenomen
 - **Fechas.** El archivo de fechas termina el 12/03/2002. Los nodos posteriores usan el año y mes de su ID (`mes_id`).
 - **Tópicos.** Son las 15 comunidades de Louvain (`seed=42`, `resolution=1`) con al menos el 1 % de los nodos, sin nombres
   de tema porque no se usa texto.
+- **Técnicas opcionales** (notebook 3): co-citación con FP-Growth (soporte 0.002), NMF como tópicos alternativos y
+  SVD truncada + t-SNE sobre una muestra estratificada de unos 6,000 artículos más el top-100 de PageRank.

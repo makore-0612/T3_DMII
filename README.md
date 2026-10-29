@@ -20,7 +20,7 @@ T3_DMII/
 │   ├── notebooks/
 │   │   ├── 01_eda_calidad_preprocesamiento.ipynb   # perfilado, calidad, enlace aristas–fechas y limpieza
 │   │   ├── 02_pagerank_hits.ipynb                  # matriz dispersa, PageRank (β, cohortes, robustez) y HITS
-│   │   └── 03_topic_sensitive.ipynb                # tópicos con Louvain, PageRank por tópico, conclusiones
+│   │   └── 03_topic_sensitive.ipynb                # Louvain, PageRank por tópico, FP-Growth, NMF, t-SNE, conclusiones
 │   ├── requirements.txt
 │   ├── README.md                                   # descarga de los datos y orden de ejecución
 │   └── data/                                       # no incluida: ver cit-HepPh/README.md
