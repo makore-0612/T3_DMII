@@ -218,3 +218,21 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# --- Práctica T3 ---
+# Datos (se descargan de SNAP; ver cit-HepPh/README.md)
+**/data/
+*.gz
+*.parquet
+*.npz
+
+# Documentos generados
+*.pdf
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Herramientas personales
+CLAUDE.md
+.claude/
