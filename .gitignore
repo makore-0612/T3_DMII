@@ -228,6 +228,9 @@ __marimo__/
 *.npz
 # spotify: Kaggle, en una carpeta Datos/
 **/Datos/
+# Wikipedia: dump de Wikimedia y salidas de la extracción, en Wikipedia/data/
+*.bz2
+**/spark_tmp/
 
 # Documentos generados
 *.pdf

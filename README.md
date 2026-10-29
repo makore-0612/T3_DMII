@@ -6,13 +6,14 @@
 
 ---
 
-Este repositorio mide la importancia de los nodos de dos redes con tres algoritmos de análisis de enlaces: **PageRank**
+Este repositorio mide la importancia de los nodos de tres redes con tres algoritmos de análisis de enlaces: **PageRank**
 (con teletransportación), **HITS** (hubs y autoridades) y **PageRank sensible a tópico**.
 
 | Carpeta | Dataset | Red | Tópicos |
 |---|---|---|---|
 | `cit-HepPh/` | [cit-HepPh (SNAP)](https://snap.stanford.edu/data/cit-HepPh.html): citas entre artículos de arXiv `hep-ph`, 1992–2003 | Dirigida: 34,546 artículos y 421,578 citas | Comunidades de Louvain del grafo de citas |
 | `spotify/` | [Spotify Artist Feature Collaboration Network (Kaggle)](https://www.kaggle.com/datasets/jfreyberg/spotify-artist-feature-collaboration-network) | No dirigida: 156,422 artistas y 300,386 colaboraciones | Macrogéneros musicales |
+| `Wikipedia/` | [Dump de la Wikipedia en inglés (Wikimedia)](https://dumps.wikimedia.org/enwiki/latest/): enlaces entre artículos, revisiones hasta octubre de 2026 | Dirigida: 7,249,099 artículos y 236,242,098 enlaces | Temas de *Main topic classifications* (árbol de categorías) |
 
 ```text
 T3_DMII/
@@ -24,12 +25,22 @@ T3_DMII/
 │   ├── requirements.txt
 │   ├── README.md                                   # descarga de los datos y orden de ejecución
 │   └── data/                                       # no incluida: ver cit-HepPh/README.md
-└── spotify/
-    ├── Notebooks/
-    │   └── pagerank_hits_spotify.ipynb             # limpieza, EDA, PageRank, HITS y PageRank por macrogénero
+├── spotify/
+│   ├── Notebooks/
+│   │   └── pagerank_hits_spotify.ipynb             # limpieza, EDA, PageRank, HITS y PageRank por macrogénero
+│   ├── requirements.txt
+│   ├── README.md                                   # descarga de los datos y cómo replicarlo
+│   └── Datos/                                      # no incluida: ver spotify/README.md
+└── Wikipedia/
+    ├── notebooks/
+    │   ├── 01_carga_exploracion.ipynb              # lectura paralela del dump, exploración y grafo de enlaces (Spark)
+    │   ├── 02_pagerank_hits.ipynb                  # matriz dispersa, PageRank (β, robustez, antigüedad) y HITS
+    │   └── 03_topic_sensitive.ipynb                # tópicos por categorías, PageRank por tópico, validación, conclusiones
+    ├── wiki_extract.py                             # extracción en paralelo del dump multistream
+    ├── registro.py                                 # guardado de resultados y resumen de avance
     ├── requirements.txt
-    ├── README.md                                   # descarga de los datos y cómo replicarlo
-    └── Datos/                                      # no incluida: ver spotify/README.md
+    ├── README.md                                   # descarga de los datos, decisiones y orden de ejecución
+    └── data/                                       # no incluida: ver Wikipedia/README.md
 ```
 
 Los datos no se incluyen en el repositorio; cada carpeta explica cómo obtenerlos. Cada dataset tiene su propio
