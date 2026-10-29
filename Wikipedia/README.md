@@ -18,12 +18,6 @@ Grafo de enlaces entre los artículos de la Wikipedia en inglés: si el artícul
 **Qué contiene.** La **última revisión** de cada página de contenido: 25,932,219 páginas de artículos, redirecciones,
 categorías, plantillas, archivos, páginas de ayuda y módulos, con su texto en *wikitexto*.
 
-**Qué no contiene.**
-- El historial de ediciones.
-- Las páginas de discusión ni de usuario (los namespaces impares).
-- El texto con las plantillas expandidas.
-- Visitas ni fechas de creación.
-
 **Multistream.** El archivo es una concatenación de 259,358 streams bz2 independientes de 100 páginas cada uno. El
 índice dice en qué byte empieza cada stream (`offset:page_id:título`). Eso permite leer cualquier artículo sin recorrer
 el archivo y repartir el trabajo entre varios procesos.
@@ -88,12 +82,9 @@ Están en [`wiki_extract.py`](wiki_extract.py) y en el notebook 01.
 
 ## 4. Decisiones de los algoritmos
 
-Todos se implementan con el **método de potencias sobre `scipy.sparse`**, sin `networkx` (no cabría en memoria).
+Todos se implementan con el **método de potencias sobre `scipy.sparse`**.
 
 - Los productos matriz-vector se hacen en paralelo con 16 bloques de filas.
-- Los vectores son `float64`.
-- Si algo no converge, se guarda el resultado y se anota el residuo en `data/RESUMEN.md`. En esta ejecución todo
-  convergió.
 
 **PageRank (notebook 02).**
 - $r = \beta M r + (1-\beta)\,e/n$ con $\beta \in \{0.70, 0.85, 0.95\}$. El análisis usa $\beta = 0.85$.
@@ -127,7 +118,7 @@ Todos se implementan con el **método de potencias sobre `scipy.sparse`**, sin `
   - Un vector por tópico: teletransportación uniforme a sus artículos, y colgantes de regreso al tópico.
   - Los 32 se calculan a la vez como un producto de $A^\top$ por una matriz densa $n \times 32$.
   - Tolerancia $10^{-8}$ por columna, máximo 1,000 iteraciones.
-- **Validación**, como en Spotify:
+- **Validación**:
   - se ocultan el 20 % de los artículos con tópico (semilla 42) y se recalculan los vectores;
   - para cada artículo oculto se predice $\arg\max_T r_T(i)$;
   - se compara contra el tópico mayor y contra el voto de los vecinos.
@@ -139,15 +130,6 @@ Todos se implementan con el **método de potencias sobre `scipy.sparse`**, sin `
 Las conclusiones y limitaciones de los tres notebooks están al final de `03_topic_sensitive.ipynb`.
 
 ## 5. Orden de replicación
-
-**Hardware usado.**
-- Windows 11, 16 núcleos lógicos y 32 GB de RAM.
-- Disco: unos 27 GB para el dump y el índice, más unos 11 GB para `data/`:
-  - extracción, 4 GB;
-  - grafo y matriz, 4 GB;
-  - resultados, 3 GB.
-- Memoria: los notebooks 02 y 03 mantienen en memoria la matriz por bloques (~3 GB por copia) y, en el 03, matrices
-  densas de $n \times 32$ (~1.8 GB cada una). Con 32 GB alcanzó sin problemas.
 
 **Software.**
 - Python 3.11 y `pip install -r Wikipedia/requirements.txt`.
@@ -179,6 +161,3 @@ Cada paso guarda sus resultados en `data/resultados/`:
 - los vectores en Parquet, con `id` y `title`;
 - las tablas en CSV;
 - las gráficas en PNG.
-
-Además, actualiza `data/RESUMEN.md` con lo terminado, lo pendiente y la duración de cada paso
-([`registro.py`](registro.py)). Nada de `data/` se sube al repositorio.
