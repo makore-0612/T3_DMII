@@ -1,2 +1,38 @@
-# T3_DMII
-Datos Masivos II (IIMAS–UNAM): Hits, PageRank y Sensible al Tópico.
+<img src="https://mmss.iimas.unam.mx/dmmss/wp-content/uploads/2026/02/cropped-LogoUNAM_IIMAS_Negro50-scaled-2.png" width="200"/>
+
+### Datos Masivos II
+# Práctica 3: Análisis de enlaces con PageRank, HITS y PageRank sensible a tópico
+> Equipo Tres: Castrillo Cruz Karen Arlet, Ramos González Nadia, Zamora Antiga Ángel Javier.
+
+---
+
+Este repositorio mide la importancia de los nodos de dos redes con tres algoritmos de análisis de enlaces: **PageRank**
+(con teletransportación), **HITS** (hubs y autoridades) y **PageRank sensible a tópico**.
+
+| Carpeta | Dataset | Red | Tópicos |
+|---|---|---|---|
+| `cit-HepPh/` | [cit-HepPh (SNAP)](https://snap.stanford.edu/data/cit-HepPh.html): citas entre artículos de arXiv `hep-ph`, 1992–2003 | Dirigida: 34,546 artículos y 421,578 citas | Comunidades de Louvain del grafo de citas |
+| `spotify/` | [Spotify Artist Feature Collaboration Network (Kaggle)](https://www.kaggle.com/datasets/jfreyberg/spotify-artist-feature-collaboration-network) | No dirigida: 156,422 artistas y 300,386 colaboraciones | Macrogéneros musicales |
+
+```text
+T3_DMII/
+├── cit-HepPh/
+│   ├── notebooks/
+│   │   ├── 01_eda_calidad_preprocesamiento.ipynb   # perfilado, calidad, enlace aristas–fechas y limpieza
+│   │   ├── 02_pagerank_hits.ipynb                  # matriz dispersa, PageRank (β, cohortes, robustez) y HITS
+│   │   └── 03_topic_sensitive.ipynb                # tópicos con Louvain, PageRank por tópico, conclusiones
+│   ├── requirements.txt
+│   ├── README.md                                   # descarga de los datos y orden de ejecución
+│   └── data/                                       # no incluida: ver cit-HepPh/README.md
+└── spotify/
+    ├── Notebooks/
+    │   └── pagerank_hits_spotify.ipynb             # limpieza, EDA, PageRank, HITS y PageRank por macrogénero
+    ├── requirements.txt
+    ├── README.md                                   # descarga de los datos y cómo replicarlo
+    └── Datos/                                      # no incluida: ver spotify/README.md
+```
+
+Los datos no se incluyen en el repositorio; cada carpeta explica cómo obtenerlos. Cada dataset tiene su propio
+`requirements.txt` con las versiones con las que se ejecutaron sus notebooks.
+
+> Instituto de Investigaciones en Matemáticas Aplicadas y en Sistemas, Universidad Nacional Autónoma de México. 29 de octubre de 2026.
