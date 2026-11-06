@@ -35,7 +35,8 @@ T3_DMII/
     ├── notebooks/
     │   ├── 01_carga_exploracion.ipynb              # lectura paralela del dump, exploración y grafo de enlaces (Spark)
     │   ├── 02_pagerank_hits.ipynb                  # matriz dispersa, PageRank (β, robustez, antigüedad) y HITS
-    │   └── 03_topic_sensitive.ipynb                # tópicos por categorías, PageRank por tópico, validación, conclusiones
+    │   ├── 03_topic_sensitive.ipynb                # temas por categorías, PageRank y HITS por tema, validación
+    │   └── 04_recomendaciones.ipynb                # recomendaciones a partir de un artículo, evaluación, conclusiones
     ├── wiki_extract.py                             # extracción en paralelo del dump multistream
     ├── registro.py                                 # guardado de resultados y resumen de avance
     ├── requirements.txt

@@ -1,7 +1,7 @@
 # Wikipedia: PageRank, HITS y PageRank sensible a tópico
 
 Grafo de enlaces entre los artículos de la Wikipedia en inglés: si el artículo *i* enlaza al artículo *j*, hay una arista
-*i → j*. Sobre ese grafo se calculan PageRank, HITS y un PageRank por tema.
+*i → j*. Sobre ese grafo se calculan PageRank, HITS, un PageRank por tema y recomendaciones a partir de un artículo.
 
 ## 1. Los datos
 
@@ -78,7 +78,7 @@ Están en [`wiki_extract.py`](wiki_extract.py) y en el notebook 01.
 - **Matriz dispersa.** $A$ se guarda en CSR: 2.86 GB, contra 420 TB de la densa. La matriz de transición
   $M = A^\top D_{out}^{-1}$ no se construye: $Mv = A^\top (v / k_{out})$.
 - **Grafo de análisis sin páginas de desambiguación.** Se quitan las 369,725 desambiguaciones con sus aristas. Son
-  menús de navegación, no contenido, y cumplen el papel de los seudoartistas de Spotify. PageRank sobre el grafo
+  menús de navegación, no contenido. PageRank sobre el grafo
   completo se compara en una sección de robustez: Spearman 0.992 y Jaccard del top-100 0.961.
 - **Listas y cronologías** (`List of…`, `1982`, `2025 in the United States`) sí son contenido y se conservan; solo se
   marcan.
@@ -106,48 +106,71 @@ Todos se implementan con el **método de potencias sobre `scipy.sparse`**, sin `
 **HITS (notebook 02).**
 - $a \leftarrow A^\top h$, $h \leftarrow A a$, con normalización $L_1$.
 - Tolerancia $10^{-10}$, máximo 500 iteraciones; converge en 106.
-- **Validación:** residuos de las relaciones de la iteración, cociente de Rayleigh, y $\sigma_1^2$ calculado aparte
-  con `svds` (`maxiter = 30`). Coinciden con una diferencia relativa de 3e-13.
-- Además, un **HITS dependiente de consulta** (Kleinberg):
-  - conjunto raíz = artículos de una categoría y sus subcategorías a 2 niveles;
-  - conjunto base = raíz + enlazados + hasta 50 artículos que enlazan a cada uno.
+- **Validación:** la diferencia con `nx.hits` en el mismo subgrafo de 20,000 nodos es menor a $10^{-16}$.
 
-**PageRank sensible a tópico (notebook 03).**
+**PageRank por tema (notebook 03).**
 - **Raíces.** Las 34 subcategorías de *Main topic classifications*, sin *Lists* ni *Main topic articles*: quedan 32
-  tópicos (*Science*, *History*, *Geography*, *Humans*…).
+  temas (*Science*, *History*, *Geography*, *Humans*…).
 - **Categorías de mantenimiento.** Se quitan del árbol y de los artículos (*Articles with…*, *Pages using…*, *CS1…*,
   *Use dmy dates…*, *Wikipedia…*).
-- **Asignación.**
+- **Pertenencia.**
   - Con un BFS desde cada raíz se calcula la distancia de cada categoría.
   - La distancia de un artículo a una raíz es 1 + la mínima de sus categorías.
-  - El artículo pertenece al tópico o tópicos **más cercanos**, si esa distancia es ≤ **D = 8**. La pertenencia es
-    múltiple, como en Spotify.
-  - Con D = 8 tiene tópico el 95.3 % de los artículos del grafo de análisis.
+  - El artículo pertenece al tema o temas **más cercanos**, si esa distancia es ≤ 8. Puede pertenecer a varios.
+  - Así tiene tema el 95.3 % de los artículos del grafo de análisis.
+- **Semillas.** El salto de cada vector va solo a los artículos del tema que están a 5 niveles o menos de la raíz. Un
+  camino largo se puede desviar del tema.
 - **Vectores.**
-  - Un vector por tópico: teletransportación uniforme a sus artículos, y colgantes de regreso al tópico.
+  - Un vector por tema: salto uniforme a sus semillas, y colgantes de regreso a ellas.
   - Los 32 se calculan a la vez como un producto de $A^\top$ por una matriz densa $n \times 32$.
-  - Tolerancia $10^{-8}$ por columna, máximo 1,000 iteraciones.
-- **Validación**, como en Spotify:
-  - se ocultan el 20 % de los artículos con tópico (semilla 42) y se recalculan los vectores;
-  - para cada artículo oculto se predice $\arg\max_T r_T(i)$;
-  - se compara contra el tópico mayor y contra el voto de los vecinos.
+  - Tolerancia $10^{-8}$ por columna, máximo 1,000 iteraciones; converge en 61, en unos 13 minutos.
+- **Orden por especificidad.** $r_S(i)\,\ln(r_S(i) / r(i))$ premia lo que el tema sube respecto al PageRank general.
+  La pureza mediana del top-100 pasa de 17 % a 49 %, y mejora en 30 de 32 temas.
+- **HITS dentro de cada tema.** Se corre con los enlaces entre las semillas de cada tema; los 32 tardan 17 segundos.
+- **Lector con varios intereses.** Mezcla lineal de vectores. Con 70 % *Science* y 30 % *History* coincide con el
+  cálculo directo con una diferencia de 1.3e-04.
+- **Validación:** se oculta el 20 % de los artículos con tema (semilla 42) y se recalculan los vectores.
 
-  Resultado: 41.1 % de aciertos, contra 29.6 % de la línea base y 48.3 % del voto de vecinos.
-- También se prueba una consulta de usuario como mezcla lineal de tópicos (70 % *Science*, 30 % *History*). Coincide
-  con el cálculo directo con una diferencia de 2.7e-04.
+| Forma de elegir el tema | Aciertos |
+|---|---|
+| Voto de vecinos | 48.3 % |
+| Mayor $r_T(i)$ | 39.2 % |
+| Corregido por tamaño, $r_T(i)\,\lvert S_T\rvert$ | 37.5 % |
+| Percentil dentro del tema | 31.8 % |
+| Tema más grande (línea base) | 29.6 % |
 
-Las conclusiones y limitaciones de los tres notebooks están al final de `03_topic_sensitive.ipynb`.
+**Recomendaciones (notebook 04).**
+- 10 recomendaciones por artículo, a partir de los puntajes de los 6.88 millones de artículos, sin recortar candidatos.
+- **Tres señales:** PageRank que siempre regresa al artículo, ordenado por especificidad (tolerancia $10^{-6}$); artículos
+  que se mencionan junto con él, y artículos que enlazan a lo mismo. Las dos últimas pesan menos a páginas y destinos
+  muy comunes.
+- **Combinación:** se suma $1 / (60 + \text{lugar})$ de cada señal (*reciprocal rank fusion*).
+- **Validación:** la diferencia de la primera señal con `nx.pagerank` en un subgrafo de 20,000 nodos es 4.1e-13.
+- **Evaluación con 50 artículos al azar** (semilla 42), ocultando el 20 % de sus enlaces de salida. Intervalos de 95 %
+  por remuestreo:
+
+| Método | Enlaces ocultos recuperados | Comparten categoría | Del top-1,000 general |
+|---|---|---|---|
+| PageRank general | 1.3 % (0.4–2.6) | 0.0 % | 100 % |
+| Navegación sin especificidad | 12.0 % (7.1–17.7) | 3.8 % (1.6–6.6) | 61.8 % |
+| Navegación | 15.0 % (10.1–20.9) | 13.8 % (9.6–18.4) | 12.6 % |
+| Se mencionan juntos | 5.1 % (2.6–8.2) | 45.6 % (36.6–54.2) | 0 % |
+| Enlazan a lo mismo | 3.8 % (1.6–6.6) | 48.2 % (39.0–57.4) | 0 % |
+| Combinación | 8.2 % (5.2–11.9) | 54.2 % (44.8–63.2) | 0 % |
+
+Ningún método gana en todo. No hay clics, así que no se mide si a un lector le sirve una recomendación.
+
+Las conclusiones y limitaciones de toda la práctica están al final de `04_recomendaciones.ipynb`.
 
 ## 5. Orden de replicación
 
 **Hardware usado.**
-- Windows 11, 16 núcleos lógicos y 32 GB de RAM.
 - Disco: unos 27 GB para el dump y el índice, más unos 11 GB para `data/`:
   - extracción, 4 GB;
   - grafo y matriz, 4 GB;
   - resultados, 3 GB.
-- Memoria: los notebooks 02 y 03 mantienen en memoria la matriz por bloques (~3 GB por copia) y, en el 03, matrices
-  densas de $n \times 32$ (~1.8 GB cada una). Con 32 GB alcanzó sin problemas.
+- Memoria: los notebooks 02, 03 y 04 mantienen en memoria la matriz por bloques (~3 GB por copia) y, en el 03, matrices
+  densas de $n \times 32$ (~1.8 GB cada una).
 
 **Software.**
 - Python 3.11 y `pip install -r Wikipedia/requirements.txt`.
@@ -172,8 +195,9 @@ reales de esta ejecución:
 | Notebook | Lee | Genera en `data/` | Tiempo |
 |---|---|---|---|
 | `01_carga_exploracion.ipynb` | el dump y su índice | `paginas/`, `enlaces/`, `categorias/` y `grafo/` (`nodos`, `aristas`, `categorias_nodo`, `jerarquia_categorias`) | 36 min (26 de extracción) |
-| `02_pagerank_hits.ipynb` | `grafo/` | `grafo/adyacencia.npz`, `grafo/puntajes.parquet` y `resultados/02_pagerank_hits/` | 16 min |
-| `03_topic_sensitive.ipynb` | `grafo/` y `grafo/puntajes.parquet` | `resultados/03_topic_sensitive/` | 35 min (12 por cada corrida de los 32 vectores) |
+| `02_pagerank_hits.ipynb` | `grafo/` y una muestra del dump | `grafo/adyacencia.npz`, `grafo/puntajes.parquet` y `resultados/02_pagerank_hits/` | 15 min |
+| `03_topic_sensitive.ipynb` | `grafo/` y `grafo/puntajes.parquet` | `resultados/03_topic_sensitive/` | 33 min (unos 13 por cada corrida de los 32 vectores) |
+| `04_recomendaciones.ipynb` | `grafo/`, `grafo/puntajes.parquet` y `resultados/03_topic_sensitive/` | `resultados/04_recomendaciones/` | 31 min (24 de la evaluación) |
 
 Cada paso guarda sus resultados en `data/resultados/`:
 - los vectores en Parquet, con `id` y `title`;
